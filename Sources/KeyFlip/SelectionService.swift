@@ -10,10 +10,20 @@ enum SelectionService {
         let axElement: AXUIElement?
     }
 
-    static func readSelection() -> Selection? {
-        if let (element, text) = accessibilitySelection() {
-            return Selection(text: text, axElement: element)
+    /// Reads the current selection. With nothing selected and `sentenceFallback` on,
+    /// selects and returns the text between the cursor and the previous period instead.
+    static func readSelection(sentenceFallback: Bool) -> Selection? {
+        if let element = focusedElement() {
+            var textRef: CFTypeRef?
+            let status = AXUIElementCopyAttributeValue(element, kAXSelectedTextAttribute as CFString, &textRef)
+            if status == .success, let text = textRef as? String {
+                if !text.isEmpty {
+                    return Selection(text: text, axElement: element)
+                }
+                return sentenceFallback ? selectSentenceBeforeCursor(in: element) : nil
+            }
         }
+        // The focused element doesn't answer AX text queries; fall back to simulated ⌘C.
         if let text = copySelectionViaClipboard(), !text.isEmpty {
             return Selection(text: text, axElement: nil)
         }
@@ -29,18 +39,66 @@ enum SelectionService {
         return replaceViaPaste(newText)
     }
 
+    // MARK: - Sentence-before-cursor
+
+    private static let sentenceBoundaries: Set<Character> = [".", "!", "?", "\n", "\r"]
+
+    /// The range and text of the unfinished sentence ending at the cursor: everything after
+    /// the last period (or line break), leading whitespace skipped. Offsets are UTF-16,
+    /// matching AX range semantics. Pure logic, exposed for tests.
+    static func sentenceBeforeCursor(in text: String, cursorUTF16 location: Int) -> (utf16Range: CFRange, text: String)? {
+        guard location > 0, location <= text.utf16.count else { return nil }
+        let cursor = String.Index(utf16Offset: location, in: text)
+        let prefix = text[..<cursor]
+        var start = prefix.startIndex
+        if let boundary = prefix.lastIndex(where: { sentenceBoundaries.contains($0) }) {
+            start = prefix.index(after: boundary)
+        }
+        while start < prefix.endIndex, prefix[start].isWhitespace {
+            start = prefix.index(after: start)
+        }
+        let sentence = String(prefix[start..<prefix.endIndex])
+        guard !sentence.isEmpty else { return nil }
+        let startOffset = start.utf16Offset(in: text)
+        return (CFRange(location: startOffset, length: location - startOffset), sentence)
+    }
+
+    private static func selectSentenceBeforeCursor(in element: AXUIElement) -> Selection? {
+        guard let value = stringAttribute(element, kAXValueAttribute),
+              let selectedRange = rangeAttribute(element, kAXSelectedTextRangeAttribute),
+              selectedRange.length == 0,
+              let (range, sentence) = sentenceBeforeCursor(in: value, cursorUTF16: selectedRange.location)
+        else { return nil }
+        var newRange = range
+        guard let rangeValue = AXValueCreate(.cfRange, &newRange),
+              AXUIElementSetAttributeValue(element, kAXSelectedTextRangeAttribute as CFString, rangeValue) == .success
+        else { return nil }
+        return Selection(text: sentence, axElement: element)
+    }
+
     // MARK: - Accessibility path
 
-    private static func accessibilitySelection() -> (AXUIElement, String)? {
+    private static func focusedElement() -> AXUIElement? {
         let systemWide = AXUIElementCreateSystemWide()
         var focusedRef: CFTypeRef?
         guard AXUIElementCopyAttributeValue(systemWide, kAXFocusedUIElementAttribute as CFString, &focusedRef) == .success,
               let focusedRef, CFGetTypeID(focusedRef) == AXUIElementGetTypeID() else { return nil }
-        let element = focusedRef as! AXUIElement
-        var textRef: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(element, kAXSelectedTextAttribute as CFString, &textRef) == .success,
-              let text = textRef as? String, !text.isEmpty else { return nil }
-        return (element, text)
+        return (focusedRef as! AXUIElement)
+    }
+
+    private static func stringAttribute(_ element: AXUIElement, _ attribute: String) -> String? {
+        var ref: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, attribute as CFString, &ref) == .success else { return nil }
+        return ref as? String
+    }
+
+    private static func rangeAttribute(_ element: AXUIElement, _ attribute: String) -> CFRange? {
+        var ref: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, attribute as CFString, &ref) == .success,
+              let ref, CFGetTypeID(ref) == AXValueGetTypeID() else { return nil }
+        var range = CFRange()
+        guard AXValueGetValue(ref as! AXValue, .cfRange, &range) else { return nil }
+        return range
     }
 
     private static func replaceViaAccessibility(_ element: AXUIElement, newText: String) -> Bool {

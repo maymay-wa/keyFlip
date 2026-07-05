@@ -14,6 +14,7 @@ KeyFlip lives quietly in your menu bar. No windows, no fuss.
 ## Features
 
 - **One hotkey**: Globe(fn) + Command, pressed together. Hold Globe and tap Command to cycle through languages quickly.
+- **No selection needed**: with nothing selected, KeyFlip converts what you just typed — from the cursor back to the last period (or line break). Toggle it off in Settings.
 - **Works with all your layouts**: cycles through whatever keyboard layouts you have enabled in macOS (input methods like Chinese/Japanese are skipped — they have no key-for-key mapping).
 - **Smart detection**: figures out which layout the text was typed in, so the first press almost always does the right thing.
 - **Switches your keyboard too** (optional): after converting, your input source flips to the target language so you can keep typing. Toggle it off in Settings.

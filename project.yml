@@ -34,6 +34,7 @@ targets:
       - Tests/KeyFlipTests
       - Sources/KeyFlip/LayoutConverter.swift
       - Sources/KeyFlip/InputSourceManager.swift
+      - Sources/KeyFlip/SelectionService.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

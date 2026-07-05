@@ -24,7 +24,8 @@ final class ConversionController {
         }
         let layouts = InputSourceManager.enabledKeyboardLayouts()
             .filter { !appState.excludedLayoutIDs.contains($0.id) }
-        guard layouts.count >= 2, let selection = SelectionService.readSelection() else {
+        guard layouts.count >= 2,
+              let selection = SelectionService.readSelection(sentenceFallback: appState.convertSentenceWhenNoSelection) else {
             NSSound.beep()
             return
         }

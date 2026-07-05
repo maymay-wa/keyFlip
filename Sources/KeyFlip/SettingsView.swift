@@ -40,6 +40,7 @@ struct SettingsView: View {
             }
             Section {
                 Toggle("Switch keyboard language after converting", isOn: $appState.switchInputSourceAfterConvert)
+                Toggle("With nothing selected, convert back to the last period", isOn: $appState.convertSentenceWhenNoSelection)
                 Toggle("Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, enabled in
                         setLaunchAtLogin(enabled)
@@ -47,7 +48,7 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 440, height: 430)
+        .frame(width: 440, height: 460)
         .onAppear {
             layouts = InputSourceManager.enabledKeyboardLayouts()
             accessibilityGranted = AXIsProcessTrusted()
