@@ -13,21 +13,43 @@ enum SelectionService {
     /// Reads the current selection. With nothing selected and `sentenceFallback` on,
     /// selects and returns the text between the cursor and the previous period instead.
     static func readSelection(sentenceFallback: Bool) -> Selection? {
-        if let element = focusedElement() {
-            var textRef: CFTypeRef?
-            let status = AXUIElementCopyAttributeValue(element, kAXSelectedTextAttribute as CFString, &textRef)
-            if status == .success, let text = textRef as? String {
-                if !text.isEmpty {
-                    return Selection(text: text, axElement: element)
-                }
-                return sentenceFallback ? selectSentenceBeforeCursor(in: element) : nil
+        if let selection = axReadSelection(sentenceFallback: sentenceFallback) {
+            return selection
+        }
+        // Electron apps (WhatsApp, Claude, Slack, …) keep their accessibility tree
+        // disabled until asked; flip it on and retry once.
+        if enableManualAccessibility() {
+            usleep(250_000)
+            if let selection = axReadSelection(sentenceFallback: sentenceFallback) {
+                return selection
             }
         }
-        // The focused element doesn't answer AX text queries; fall back to simulated ⌘C.
+        // Last resort: simulated ⌘C picks up selections AX can't see.
         if let text = copySelectionViaClipboard(), !text.isEmpty {
             return Selection(text: text, axElement: nil)
         }
         return nil
+    }
+
+    private static func axReadSelection(sentenceFallback: Bool) -> Selection? {
+        guard let element = focusedElement() else { return nil }
+        if let text = stringAttribute(element, kAXSelectedTextAttribute), !text.isEmpty {
+            return Selection(text: text, axElement: element)
+        }
+        return sentenceFallback ? selectSentenceBeforeCursor(in: element) : nil
+    }
+
+    /// Chrome turns its accessibility tree on automatically when it sees AX queries,
+    /// but Electron apps only do so when the AXManualAccessibility attribute is set.
+    /// Returns true when the frontmost app newly accepted it (so a retry is worthwhile).
+    private static var manualAXAttemptedPIDs = Set<pid_t>()
+
+    private static func enableManualAccessibility() -> Bool {
+        guard let app = NSWorkspace.shared.frontmostApplication,
+              !manualAXAttemptedPIDs.contains(app.processIdentifier) else { return false }
+        manualAXAttemptedPIDs.insert(app.processIdentifier)
+        let appElement = AXUIElementCreateApplication(app.processIdentifier)
+        return AXUIElementSetAttributeValue(appElement, "AXManualAccessibility" as CFString, kCFBooleanTrue) == .success
     }
 
     /// Replaces the selection and leaves the new text selected so the hotkey can cycle again.
