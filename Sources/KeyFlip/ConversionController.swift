@@ -1,8 +1,10 @@
 import AppKit
 import ApplicationServices
+import os.log
 
 /// Ties everything together: hotkey → read selection → convert → replace → switch layout.
 final class ConversionController {
+    private static let log = Logger(subsystem: "com.barakmayer.KeyFlip", category: "conversion")
     private let appState: AppState
     private let converter = LayoutConverter()
 
@@ -26,6 +28,7 @@ final class ConversionController {
             .filter { !appState.excludedLayoutIDs.contains($0.id) }
         guard layouts.count >= 2,
               let selection = SelectionService.readSelection(sentenceFallback: appState.convertSentenceWhenNoSelection) else {
+            Self.log.info("nothing to convert (layouts: \(layouts.count))")
             NSSound.beep()
             return
         }
@@ -34,8 +37,10 @@ final class ConversionController {
         guard let sourceIndex = layouts.firstIndex(of: sourceLayout) else { return }
         let targetLayout = layouts[(sourceIndex + 1) % layouts.count]
 
+        Self.log.info("converting \(selection.text.count) chars: \(sourceLayout.id, privacy: .public) → \(targetLayout.id, privacy: .public)")
         let converted = converter.convert(selection.text, from: sourceLayout, to: targetLayout)
         guard SelectionService.replace(selection, with: converted) else {
+            Self.log.error("replace failed")
             NSSound.beep()
             return
         }

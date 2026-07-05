@@ -1,10 +1,13 @@
 import AppKit
 import Carbon
+import os.log
 
 /// Reads and replaces the selected text in whatever app is frontmost.
 /// Prefers the Accessibility API; falls back to simulated ⌘C/⌘V with
 /// clipboard save & restore for apps with poor AX support.
 enum SelectionService {
+    private static let log = Logger(subsystem: "com.barakmayer.KeyFlip", category: "selection")
+
     struct Selection {
         let text: String
         let axElement: AXUIElement?
@@ -14,20 +17,30 @@ enum SelectionService {
     /// selects and returns the text between the cursor and the previous period instead.
     static func readSelection(sentenceFallback: Bool) -> Selection? {
         if let selection = axReadSelection(sentenceFallback: sentenceFallback) {
+            log.info("selection via AX, length \(selection.text.count)")
             return selection
         }
-        // Electron apps (WhatsApp, Claude, Slack, …) keep their accessibility tree
+        // Electron apps (Claude, Slack, …) keep their accessibility tree
         // disabled until asked; flip it on and retry once.
         if enableManualAccessibility() {
             usleep(250_000)
             if let selection = axReadSelection(sentenceFallback: sentenceFallback) {
+                log.info("selection via AX after AXManualAccessibility, length \(selection.text.count)")
                 return selection
             }
         }
-        // Last resort: simulated ⌘C picks up selections AX can't see.
+        // Simulated ⌘C picks up selections AX can't see.
         if let text = copySelectionViaClipboard(), !text.isEmpty {
+            log.info("selection via clipboard, length \(text.count)")
             return Selection(text: text, axElement: nil)
         }
+        // No selection and no AX text support (Catalyst apps like WhatsApp):
+        // capture the current line with ⇧⌘←, trim the selection to the sentence with ⇧→.
+        if sentenceFallback, let selection = selectSentenceViaKeyboard() {
+            log.info("sentence via keyboard capture, length \(selection.text.count)")
+            return selection
+        }
+        log.info("no selection found by any path")
         return nil
     }
 
@@ -56,8 +69,10 @@ enum SelectionService {
     @discardableResult
     static func replace(_ selection: Selection, with newText: String) -> Bool {
         if let element = selection.axElement, replaceViaAccessibility(element, newText: newText) {
+            log.info("replaced via AX")
             return true
         }
+        log.info("replacing via paste")
         return replaceViaPaste(newText)
     }
 
@@ -144,22 +159,70 @@ enum SelectionService {
 
     // MARK: - Clipboard fallback
 
+    /// The hotkey fires on modifier release, so the other modifier (🌐 or ⌘) is often
+    /// still physically held. Events posted at the HID tap get merged with the hardware
+    /// modifier state, turning our ⌘C into 🌐⌘C — which most apps ignore. Wait for a
+    /// clean keyboard before posting anything.
+    private static func waitForModifiersReleased(timeout: TimeInterval = 1.0) {
+        let modifiers: CGEventFlags = [.maskCommand, .maskShift, .maskControl, .maskAlternate, .maskSecondaryFn]
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if CGEventSource.flagsState(.combinedSessionState).intersection(modifiers).isEmpty {
+                return
+            }
+            usleep(15_000)
+        }
+        log.info("modifiers still held after \(timeout, format: .fixed(precision: 1))s; posting keys anyway")
+    }
+
     private static func copySelectionViaClipboard() -> String? {
+        waitForModifiersReleased()
         let pasteboard = NSPasteboard.general
         let saved = snapshot(of: pasteboard)
-        let changeCount = pasteboard.changeCount
-        postKeystroke(CGKeyCode(kVK_ANSI_C), flags: .maskCommand)
-        var attempts = 0
-        while pasteboard.changeCount == changeCount && attempts < 25 {
-            usleep(20_000)
-            attempts += 1
-        }
-        let text = pasteboard.changeCount == changeCount ? nil : pasteboard.string(forType: .string)
+        let text = copyToPasteboard(pasteboard)
         restore(saved, to: pasteboard)
         return text
     }
 
+    /// Posts ⌘C and waits for the pasteboard to change. Caller handles snapshot/restore.
+    private static func copyToPasteboard(_ pasteboard: NSPasteboard) -> String? {
+        let changeCount = pasteboard.changeCount
+        postKeystroke(CGKeyCode(kVK_ANSI_C), flags: .maskCommand)
+        var attempts = 0
+        while pasteboard.changeCount == changeCount && attempts < 15 {
+            usleep(20_000)
+            attempts += 1
+        }
+        return pasteboard.changeCount == changeCount ? nil : pasteboard.string(forType: .string)
+    }
+
+    /// For apps whose accessibility tree hides the text field (Catalyst apps like
+    /// WhatsApp): select back to the start of the line with ⇧⌘←, read it with ⌘C,
+    /// then shrink the selection from the left with ⇧→ until only the sentence
+    /// after the last period remains selected.
+    private static func selectSentenceViaKeyboard() -> Selection? {
+        waitForModifiersReleased()
+        let pasteboard = NSPasteboard.general
+        let saved = snapshot(of: pasteboard)
+        postKeystroke(CGKeyCode(kVK_LeftArrow), flags: [.maskShift, .maskCommand])
+        usleep(80_000)
+        let line = copyToPasteboard(pasteboard)
+        restore(saved, to: pasteboard)
+        guard let line, !line.isEmpty else { return nil }
+        guard let (range, sentence) = sentenceBeforeCursor(in: line, cursorUTF16: line.utf16.count) else {
+            // Nothing convertible (e.g. the line ends with a period); put the cursor back.
+            postKeystroke(CGKeyCode(kVK_RightArrow), flags: [])
+            return nil
+        }
+        let skip = line[..<String.Index(utf16Offset: range.location, in: line)].count
+        for _ in 0..<skip {
+            postKeystroke(CGKeyCode(kVK_RightArrow), flags: .maskShift)
+        }
+        return Selection(text: sentence, axElement: nil)
+    }
+
     private static func replaceViaPaste(_ text: String) -> Bool {
+        waitForModifiersReleased()
         let pasteboard = NSPasteboard.general
         let saved = snapshot(of: pasteboard)
         pasteboard.clearContents()
