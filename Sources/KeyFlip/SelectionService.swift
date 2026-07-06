@@ -110,6 +110,15 @@ enum SelectionService {
         guard let rangeValue = AXValueCreate(.cfRange, &newRange),
               AXUIElementSetAttributeValue(element, kAXSelectedTextRangeAttribute as CFString, rangeValue) == .success
         else { return nil }
+        // Catalyst apps (WhatsApp) accept the range write and return .success but never
+        // apply it, so nothing is actually selected. Read it back and bail if it didn't
+        // stick — readSelection then falls through to the keyboard-selection path.
+        guard let applied = rangeAttribute(element, kAXSelectedTextRangeAttribute),
+              applied.location == range.location, applied.length == range.length
+        else {
+            log.info("AX selection did not apply; will fall back to keyboard selection")
+            return nil
+        }
         return Selection(text: sentence, axElement: element)
     }
 
@@ -139,9 +148,17 @@ enum SelectionService {
     }
 
     private static func replaceViaAccessibility(_ element: AXUIElement, newText: String) -> Bool {
+        let valueBefore = stringAttribute(element, kAXValueAttribute)
         var rangeRef: CFTypeRef?
         let hasRange = AXUIElementCopyAttributeValue(element, kAXSelectedTextRangeAttribute as CFString, &rangeRef) == .success
         guard AXUIElementSetAttributeValue(element, kAXSelectedTextAttribute as CFString, newText as CFString) == .success else {
+            return false
+        }
+        // WhatsApp and other Catalyst apps return .success from the write above but leave the
+        // field untouched. When we can read the field value, confirm it actually changed;
+        // if not, report failure so replace() falls back to the clipboard paste path.
+        if let valueBefore, stringAttribute(element, kAXValueAttribute) == valueBefore {
+            log.info("AX write reported success but value unchanged; treating as failure")
             return false
         }
         // Re-select the replacement so another hotkey press keeps cycling.
