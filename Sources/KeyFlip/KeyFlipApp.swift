@@ -6,7 +6,7 @@ struct KeyFlipApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
 
     var body: some Scene {
-        MenuBarExtra("KeyFlip", systemImage: "keyboard") {
+        MenuBarExtra("KeyFlip", image: "MenuBarIcon") {
             Button("Convert Selected Text  🌐⌘") {
                 delegate.convertFromMenu()
             }
