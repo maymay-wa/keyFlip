@@ -13,6 +13,9 @@ struct LayoutMaps {
     var forward: [KeyStroke: String] = [:]
     /// Text → the key that produces it (unshifted mappings win on collisions).
     var reverse: [String: KeyStroke] = [:]
+    /// Longest run of scalars any single key produces. Arabic – PC puts لا on one
+    /// key, so matching one scalar at a time would never find it again.
+    var longestOutput = 1
 }
 
 /// Remaps text between keyboard layouts: the characters you typed in one layout,
@@ -22,14 +25,31 @@ final class LayoutConverter {
 
     func convert(_ text: String, from source: KeyboardLayout, to target: KeyboardLayout) -> String {
         guard let sourceMaps = maps(for: source), let targetMaps = maps(for: target) else { return text }
+        // Scalars, not Characters: Thai and Devanagari put a base letter and its
+        // mark on separate keys, and Swift would glue those into one Character that
+        // matches no single key press.
+        let scalars = Array(text.unicodeScalars)
         var result = ""
-        for character in text {
-            if let stroke = sourceMaps.reverse[String(character)],
-               let replacement = targetMaps.forward[stroke] {
-                result += replacement
-            } else {
-                result.append(character)
+        var index = 0
+        while index < scalars.count {
+            // Longest match first: a key that types several scalars has to be
+            // recognised as one key press, not mistaken for that many separate ones.
+            var matchedLength = 0
+            let longest = min(sourceMaps.longestOutput, scalars.count - index)
+            for length in stride(from: longest, through: 1, by: -1) {
+                let candidate = String(String.UnicodeScalarView(scalars[index..<(index + length)]))
+                if let stroke = sourceMaps.reverse[candidate],
+                   let replacement = targetMaps.forward[stroke] {
+                    result += replacement
+                    matchedLength = length
+                    break
+                }
             }
+            if matchedLength == 0 {
+                result.unicodeScalars.append(scalars[index])
+                matchedLength = 1
+            }
+            index += matchedLength
         }
         return result
     }
@@ -38,7 +58,7 @@ final class LayoutConverter {
     /// Used to guess which layout a mistyped selection belongs to.
     func coverage(of text: String, by layout: KeyboardLayout) -> Double {
         guard let layoutMaps = maps(for: layout) else { return 0 }
-        let relevant = text.filter { !$0.isWhitespace && !$0.isNumber }
+        let relevant = text.unicodeScalars.filter { !$0.properties.isWhitespace && !("0"..."9").contains($0) }
         guard !relevant.isEmpty else { return 0 }
         let covered = relevant.filter { layoutMaps.reverse[String($0)] != nil }
         return Double(covered.count) / Double(relevant.count)
@@ -89,6 +109,7 @@ final class LayoutConverter {
                     if maps.reverse[output] == nil {
                         maps.reverse[output] = stroke
                     }
+                    maps.longestOutput = max(maps.longestOutput, output.unicodeScalars.count)
                 }
             }
         }
