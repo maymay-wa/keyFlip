@@ -2,6 +2,7 @@ import SwiftUI
 import Combine
 import ServiceManagement
 import ApplicationServices
+import Security
 
 /// What happens to text typed in one language. Three states in one control, so a
 /// row reads as a sentence -- "Hebrew → English" -- instead of asking the reader
@@ -104,22 +105,73 @@ struct SettingsView: View {
     /// Only shown when access is missing -- when it is granted there is nothing to
     /// say, and a permanent green tick is just another row to read past.
     private var accessibilityWarning: some View {
-        HStack(alignment: .top, spacing: 11) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(.orange)
-                .font(.title3)
-            VStack(alignment: .leading, spacing: 3) {
-                Text("KeyFlip can't convert anything yet").fontWeight(.medium)
-                Text("It needs Accessibility access to read the selected text, replace it, and hear the hotkey.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top, spacing: 11) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.orange)
+                    .font(.title3)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("KeyFlip can't convert anything yet").fontWeight(.medium)
+                    Text("It needs Accessibility access to read the selected text, replace it, and hear the hotkey.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 8)
+                Button("Grant Access…") { requestAccessibility() }
+                    .buttonStyle(.borderedProminent)
             }
-            Spacer(minLength: 8)
-            Button("Open Settings…") { openAccessibilitySettings() }
-                .buttonStyle(.borderedProminent)
+            if Self.isAdHocSigned {
+                staleGrantHint
+            }
         }
         .padding(.vertical, 4)
+    }
+
+    /// The confusing case: System Settings lists KeyFlip with the switch on, yet
+    /// access still does not work. An ad-hoc signed build gets a new code identity
+    /// every time it is compiled, and macOS quietly stops honouring the old grant
+    /// while leaving the switched-on row behind. Only locally built copies hit this
+    /// -- a release build is signed with a Developer ID, whose identity is stable.
+    private var staleGrantHint: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Already switched it on in System Settings?")
+                .font(.callout)
+                .fontWeight(.medium)
+            Text("This copy is ad-hoc signed, so rebuilding it invalidates the permission while System Settings still shows it granted. Remove the old KeyFlip entry with the – button, then grant it again:")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack {
+                Text("tccutil reset Accessibility com.barakmayer.KeyFlip")
+                    .font(.system(.caption, design: .monospaced))
+                    .textSelection(.enabled)
+                Spacer()
+                Button("Open System Settings") { openAccessibilitySettings() }
+                    .controlSize(.small)
+            }
+            .padding(8)
+            .background(RoundedRectangle(cornerRadius: 6).fill(.quaternary))
+        }
+        .padding(.leading, 31)
+    }
+
+    /// True when this build carries an ad-hoc signature rather than a real identity.
+    private static let isAdHocSigned: Bool = {
+        var staticCode: SecStaticCode?
+        guard SecStaticCodeCreateWithPath(Bundle.main.bundleURL as CFURL, [], &staticCode) == errSecSuccess,
+              let staticCode else { return false }
+        var information: CFDictionary?
+        guard SecCodeCopySigningInformation(staticCode, SecCSFlags(rawValue: 0), &information) == errSecSuccess,
+              let dictionary = information as? [String: Any],
+              let flags = dictionary[kSecCodeInfoFlags as String] as? UInt32 else { return false }
+        return flags & 0x0002 != 0   // kSecCodeSignatureAdhoc
+    }()
+
+    /// Re-runs the system prompt, which offers its own jump into System Settings.
+    private func requestAccessibility() {
+        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+        AXIsProcessTrustedWithOptions(options)
     }
 
     private var needsMoreLayouts: some View {

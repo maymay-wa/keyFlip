@@ -9,6 +9,7 @@
 #
 #   scripts/package.sh                 # sign + notarize + package into dist/
 #   scripts/package.sh --release       # ...and stage a draft GitHub release
+#   scripts/package.sh --install       # build, sign, install to /Applications
 #
 # Signing identity is auto-detected from the keychain. Overrides:
 #   SIGN_IDENTITY="Developer ID Application: ..."   # or "-" for ad-hoc
@@ -19,9 +20,11 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 MAKE_RELEASE=0
+INSTALL_ONLY=0
 for arg in "$@"; do
     case "$arg" in
         --release) MAKE_RELEASE=1 ;;
+        --install) INSTALL_ONLY=1 ;;
         *) echo "unknown argument: $arg" >&2; exit 2 ;;
     esac
 done
@@ -67,6 +70,22 @@ while IFS= read -r nested; do
 done < <(find "$APP/Contents" -maxdepth 3 \( -name '*.framework' -o -name '*.dylib' -o -name '*.appex' \) 2>/dev/null)
 codesign --force --options runtime --timestamp -s "$SIGN_IDENTITY" "$APP"
 codesign --verify --strict --verbose=1 "$APP"
+
+# Install and stop. Worth doing even when you are only developing: an ad-hoc
+# signed build gets a new code identity every time it compiles, so macOS silently
+# drops its Accessibility grant while still showing KeyFlip switched on in System
+# Settings. A Developer ID signature keeps one identity, so the grant sticks.
+if [[ "$INSTALL_ONLY" == "1" ]]; then
+    if [[ "$SIGN_IDENTITY" == "-" ]]; then
+        echo "!! Installing an ad-hoc signed build -- its Accessibility grant will"
+        echo "!! stop applying every time you rebuild."
+    fi
+    echo "==> Installing to /Applications"
+    rm -rf /Applications/KeyFlip.app
+    cp -R "$APP" /Applications/
+    echo "==> Installed: $(codesign -dv --verbose=2 /Applications/KeyFlip.app 2>&1 | grep -E '^Authority' | head -1)"
+    exit 0
+fi
 
 if [[ -n "$NOTARY_PROFILE" ]]; then
     echo "==> Notarizing app (profile: $NOTARY_PROFILE)"
