@@ -25,6 +25,7 @@
 		EA0DEEBB6DDA72FEF81C57E2 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 417E9693DB18566BC5F439A4 /* AppState.swift */; };
 		EE91DC32A32E8206B33F86F3 /* SentenceExtractionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3571080EDF2CC76C99AEBA24 /* SentenceExtractionTests.swift */; };
 		F19D0F77897EAC2A66DC3690 /* LayoutConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C8758BD40F790B6D749324 /* LayoutConverter.swift */; };
+		F9BF9925F890AFA652AC3CB9 /* AllInstalledLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4DD02E152861A4F8CBBAFE /* AllInstalledLayoutTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 		417E9693DB18566BC5F439A4 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		5036E6A8825DA8CAC2C64859 /* ConversionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversionController.swift; sourceTree = "<group>"; };
 		58CADAC0A5203A3E6C3B3F80 /* InputSourceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputSourceManager.swift; sourceTree = "<group>"; };
+		5D4DD02E152861A4F8CBBAFE /* AllInstalledLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllInstalledLayoutTests.swift; sourceTree = "<group>"; };
 		8AAC79FE5FD086701D04BDE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8C79C4CDF3910BEB2EFB5155 /* KeyFlipApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyFlipApp.swift; sourceTree = "<group>"; };
 		9120E7E2AE36AC636152E78C /* KeyFlipTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeyFlipTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -51,6 +53,7 @@
 		217EE8F3C0F1BCED4FA05321 /* KeyFlipTests */ = {
 			isa = PBXGroup;
 			children = (
+				5D4DD02E152861A4F8CBBAFE /* AllInstalledLayoutTests.swift */,
 				E185C55A5892A6B869F3AA79 /* ConversionRouteTests.swift */,
 				F2DFEA0CDABE1C1702B5F94B /* LayoutConverterTests.swift */,
 				18317F8C01E5FB741F3B59E8 /* MajorLanguageTests.swift */,
@@ -204,6 +207,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F9BF9925F890AFA652AC3CB9 /* AllInstalledLayoutTests.swift in Sources */,
 				985D0869FA8D3DFF424DE371 /* ConversionRoute.swift in Sources */,
 				0F661033A150BE19F10F1108 /* ConversionRouteTests.swift in Sources */,
 				EA01FCF93A560333D552C834 /* InputSourceManager.swift in Sources */,
