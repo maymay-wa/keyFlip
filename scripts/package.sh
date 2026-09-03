@@ -166,7 +166,11 @@ if [[ "$MAKE_RELEASE" == "1" ]]; then
     echo "==> Staging draft GitHub release $TAG"
     git rev-parse "$TAG" >/dev/null 2>&1 || git tag -a "$TAG" -m "KeyFlip $VERSION"
     git push origin "$TAG"
-    gh release create "$TAG" "$DMG" "$ZIP" "$DIST/SHA256SUMS" \
-        --draft --title "KeyFlip $VERSION" --notes-file scripts/release-notes.md
+    sed "s/__VERSION__/$VERSION/g" scripts/release-notes.md > "$DIST/release-notes.md"
+    # A version-less copy gives README and the web a permanent download URL:
+    # https://github.com/maymay-wa/keyFlip/releases/latest/download/KeyFlip.dmg
+    cp "$DMG" "$DIST/KeyFlip.dmg"
+    gh release create "$TAG" "$DMG" "$DIST/KeyFlip.dmg" "$ZIP" "$DIST/SHA256SUMS" \
+        --draft --title "KeyFlip $VERSION" --notes-file "$DIST/release-notes.md"
     echo "Draft created -- review it, then publish with: gh release edit $TAG --draft=false"
 fi

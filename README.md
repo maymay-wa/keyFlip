@@ -2,7 +2,7 @@
 
 **Fix text you typed in the wrong keyboard language — with one keystroke.**
 
-[![Download](https://img.shields.io/github/v/release/maymay-wa/keyFlip?label=Download%20for%20macOS&color=5b2fa8&style=flat-square)](https://github.com/maymay-wa/keyFlip/releases/latest)
+[![Download](https://img.shields.io/github/v/release/maymay-wa/keyFlip?label=Download%20for%20macOS&color=5b2fa8&style=flat-square)](https://github.com/maymay-wa/keyFlip/releases/latest/download/KeyFlip.dmg)
 [![macOS 14+](https://img.shields.io/badge/macOS-14%2B-lightgrey?style=flat-square)](https://github.com/maymay-wa/keyFlip/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
@@ -29,7 +29,7 @@ KeyFlip lives quietly in your menu bar — a free, open-source keyboard layout c
 
 ### Download
 
-Grab `KeyFlip-x.y.z.dmg` from the [latest release](../../releases/latest), open it, and drag **KeyFlip** into **Applications**. That's the whole install — the app is signed and notarized by Apple, so there's no Gatekeeper detour on first launch.
+**[Download KeyFlip.dmg](https://github.com/maymay-wa/keyFlip/releases/latest/download/KeyFlip.dmg)**, open it, and drag **KeyFlip** into **Applications**. That's the whole install — the app is signed and notarized by Apple, so there's no Gatekeeper detour on first launch.
 
 Requires macOS 14 (Sonoma) or later. Universal binary (Apple silicon and Intel).
 
