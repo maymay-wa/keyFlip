@@ -2,6 +2,10 @@
 
 **Fix text you typed in the wrong keyboard language — with one keystroke.**
 
+[![Download](https://img.shields.io/github/v/release/maymay-wa/keyFlip?label=Download%20for%20macOS&color=5b2fa8&style=flat-square)](https://github.com/maymay-wa/keyFlip/releases/latest)
+[![macOS 14+](https://img.shields.io/badge/macOS-14%2B-lightgrey?style=flat-square)](https://github.com/maymay-wa/keyFlip/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
+
 You know the moment: you type a whole sentence, look up, and it's gibberish because your keyboard was still in the other language. `akuo` instead of `שלום`. KeyFlip fixes it in place:
 
 1. Select the mistyped text.
@@ -9,7 +13,7 @@ You know the moment: you type a whole sentence, look up, and it's gibberish beca
 3. The text is retyped as if you had pressed the same keys in your next keyboard language.
 4. Press again to cycle to the next language.
 
-KeyFlip lives quietly in your menu bar. No windows, no fuss.
+KeyFlip lives quietly in your menu bar — a free, open-source keyboard layout converter for macOS. No windows, no fuss. It works between any input sources you have enabled: Hebrew ⇄ English, Russian ⇄ English, Arabic, Greek, Ukrainian, Persian and more.
 
 ## Features
 
