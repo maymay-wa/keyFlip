@@ -13,7 +13,7 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section {
-                Text("Select mistyped text anywhere, then press 🌐⌘ (Globe + Command). Press it again to cycle to the next language.")
+                Text("Select mistyped text anywhere, then press 🌐⌘ (Globe + Command). Press it again to convert the result onward.")
                     .foregroundStyle(.secondary)
             }
             Section {
@@ -29,14 +29,33 @@ struct SettingsView: View {
                     }
                 }
             }
-            Section("Languages in the cycle") {
+            Section("Languages") {
                 ForEach(layouts) { layout in
-                    Toggle(layout.name, isOn: inclusionBinding(for: layout))
+                    HStack {
+                        Toggle(isOn: inclusionBinding(for: layout)) {
+                            Text(layout.name)
+                        }
+                        Spacer(minLength: 12)
+                        Image(systemName: "arrow.right")
+                            .foregroundStyle(.tertiary)
+                        Picker("", selection: destinationBinding(for: layout)) {
+                            Text("Next language").tag(String?.none)
+                            ForEach(destinationChoices(excluding: layout)) { choice in
+                                Text(choice.name).tag(String?.some(choice.id))
+                            }
+                        }
+                        .labelsHidden()
+                        .frame(width: 170)
+                        .disabled(appState.excludedLayoutIDs.contains(layout.id))
+                    }
                 }
                 if layouts.count < 2 {
                     Text("Enable at least two keyboard layouts in System Settings → Keyboard → Input Sources.")
                         .foregroundStyle(.secondary)
                 }
+                Text("“Next language” cycles through the languages you've ticked. Pick a language instead and text always converts straight to it — the way to go when two of your layouts are the same language.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
             Section {
                 Toggle("Switch keyboard language after converting", isOn: $appState.switchInputSourceAfterConvert)
@@ -48,7 +67,7 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 440, height: 460)
+        .frame(width: 500, height: 560)
         .onAppear {
             layouts = InputSourceManager.enabledKeyboardLayouts()
             accessibilityGranted = AXIsProcessTrusted()
@@ -58,6 +77,32 @@ struct SettingsView: View {
             accessibilityGranted = AXIsProcessTrusted()
             layouts = InputSourceManager.enabledKeyboardLayouts()
         }
+    }
+
+    /// Where a conversion from `layout` may land: every ticked language but itself.
+    private func destinationChoices(excluding layout: KeyboardLayout) -> [KeyboardLayout] {
+        layouts.filter { $0.id != layout.id && !appState.excludedLayoutIDs.contains($0.id) }
+    }
+
+    /// nil means "no destination set" -- cycle to the next language. A destination
+    /// pointing at a language that is gone or unticked also reads back as nil, so
+    /// the picker never shows a choice that would not actually be honoured.
+    private func destinationBinding(for layout: KeyboardLayout) -> Binding<String?> {
+        Binding(
+            get: {
+                guard let id = appState.layoutDestinations[layout.id],
+                      destinationChoices(excluding: layout).contains(where: { $0.id == id })
+                else { return nil }
+                return id
+            },
+            set: { destination in
+                if let destination {
+                    appState.layoutDestinations[layout.id] = destination
+                } else {
+                    appState.layoutDestinations.removeValue(forKey: layout.id)
+                }
+            }
+        )
     }
 
     private func inclusionBinding(for layout: KeyboardLayout) -> Binding<Bool> {

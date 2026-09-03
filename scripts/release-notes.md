@@ -31,6 +31,8 @@ You will also want at least **two keyboard layouts** enabled in System Settings 
 - One hotkey: Globe(fn) + Command. Hold Globe and tap Command to cycle through languages.
 - Works with nothing selected — converts from the cursor back to the last period or line break.
 - Cycles through whatever keyboard layouts you have enabled; input methods like Chinese and Japanese are skipped.
+- **A destination per language** — instead of cycling, point each language straight at another one. Needed when you keep two layouts for one language (Hebrew QWERTY *and* Hebrew PC), where cycling picks a coin flip.
+- Settings opens on first launch, so a menu bar app with no Dock icon isn't a guessing game.
 - Handles stubborn apps: Electron (WhatsApp, Slack, Claude) and Catalyst (WhatsApp's Mac app).
 - Detects which layout the text was typed in, so the first press usually does the right thing.
 - Optionally switches your input source after converting, so you can keep typing.

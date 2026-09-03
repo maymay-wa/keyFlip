@@ -6,7 +6,7 @@ struct KeyFlipApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
 
     var body: some Scene {
-        MenuBarExtra("KeyFlip", image: "MenuBarIcon") {
+        MenuBarExtra {
             Button("Convert Selected Text  🌐⌘") {
                 delegate.convertFromMenu()
             }
@@ -18,10 +18,31 @@ struct KeyFlipApp: App {
             Button("Quit KeyFlip") {
                 NSApplication.shared.terminate(nil)
             }
+        } label: {
+            MenuBarLabel(appState: delegate.appState)
         }
         Settings {
             SettingsView(appState: delegate.appState)
         }
+    }
+}
+
+/// The menu bar icon -- and the app's only view that exists from launch, with no
+/// window to be shown in. That makes it the one place a fresh install can open
+/// Settings from: `openSettings` is a SwiftUI environment action, and AppDelegate
+/// has no supported way to reach the Settings scene.
+private struct MenuBarLabel: View {
+    let appState: AppState
+    @Environment(\.openSettings) private var openSettings
+
+    var body: some View {
+        Image("MenuBarIcon")
+            .task {
+                guard !appState.hasLaunchedBefore else { return }
+                appState.hasLaunchedBefore = true
+                NSApp.activate(ignoringOtherApps: true)
+                openSettings()
+            }
     }
 }
 

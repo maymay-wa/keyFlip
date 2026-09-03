@@ -34,8 +34,9 @@ final class ConversionController {
         }
 
         let sourceLayout = sourceLayout(for: selection.text, among: layouts)
-        guard let sourceIndex = layouts.firstIndex(of: sourceLayout) else { return }
-        let targetLayout = layouts[(sourceIndex + 1) % layouts.count]
+        guard let targetLayout = ConversionRoute.target(from: sourceLayout,
+                                                        among: layouts,
+                                                        destinations: appState.layoutDestinations) else { return }
 
         Self.log.info("converting \(selection.text.count) chars: \(sourceLayout.id, privacy: .public) → \(targetLayout.id, privacy: .public)")
         let converted = converter.convert(selection.text, from: sourceLayout, to: targetLayout)

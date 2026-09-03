@@ -36,6 +36,7 @@ targets:
       - Sources/KeyFlip/LayoutConverter.swift
       - Sources/KeyFlip/InputSourceManager.swift
       - Sources/KeyFlip/SelectionService.swift
+      - Sources/KeyFlip/ConversionRoute.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

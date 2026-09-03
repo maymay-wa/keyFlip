@@ -7,15 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0F661033A150BE19F10F1108 /* ConversionRouteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E185C55A5892A6B869F3AA79 /* ConversionRouteTests.swift */; };
 		113BA1B9D11211DAC98644AF /* SelectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99BE74C7FAB2BF1838460131 /* SelectionService.swift */; };
 		220542490D43E340ED161FF8 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFDD4B55DECC7BBB05363031 /* SettingsView.swift */; };
 		2526C5C8955BB895CEA8B532 /* SelectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99BE74C7FAB2BF1838460131 /* SelectionService.swift */; };
 		25883C3A405A4AE6FACB63A2 /* LayoutConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2DFEA0CDABE1C1702B5F94B /* LayoutConverterTests.swift */; };
 		3185154DCDB2C3E73FA7B364 /* HotkeyMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA24B4692861031CB6786398 /* HotkeyMonitor.swift */; };
 		622E24ED74B7C7E675831167 /* LayoutConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C8758BD40F790B6D749324 /* LayoutConverter.swift */; };
+		985D0869FA8D3DFF424DE371 /* ConversionRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4151C5039427F575A8F5620 /* ConversionRoute.swift */; };
 		CFBE8437B9AFAE214AEF96F2 /* ConversionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5036E6A8825DA8CAC2C64859 /* ConversionController.swift */; };
 		D783E0FF7CB6DC5D420BAFE6 /* InputSourceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58CADAC0A5203A3E6C3B3F80 /* InputSourceManager.swift */; };
 		DBBA625DD92F84F197859154 /* KeyFlipApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C79C4CDF3910BEB2EFB5155 /* KeyFlipApp.swift */; };
+		E25F1491F9C4E68C7E344285 /* ConversionRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4151C5039427F575A8F5620 /* ConversionRoute.swift */; };
 		E51C4DF052CC2F9C472AEBE9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0B168DA535E89836B53BD95F /* Assets.xcassets */; };
 		EA01FCF93A560333D552C834 /* InputSourceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58CADAC0A5203A3E6C3B3F80 /* InputSourceManager.swift */; };
 		EA0DEEBB6DDA72FEF81C57E2 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 417E9693DB18566BC5F439A4 /* AppState.swift */; };
@@ -34,8 +37,10 @@
 		9120E7E2AE36AC636152E78C /* KeyFlipTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeyFlipTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		99BE74C7FAB2BF1838460131 /* SelectionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionService.swift; sourceTree = "<group>"; };
 		B3C8758BD40F790B6D749324 /* LayoutConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutConverter.swift; sourceTree = "<group>"; };
+		C4151C5039427F575A8F5620 /* ConversionRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversionRoute.swift; sourceTree = "<group>"; };
 		CA24B4692861031CB6786398 /* HotkeyMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyMonitor.swift; sourceTree = "<group>"; };
 		DFDD4B55DECC7BBB05363031 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		E185C55A5892A6B869F3AA79 /* ConversionRouteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversionRouteTests.swift; sourceTree = "<group>"; };
 		E4DCBB881758B94C0F6EA2D6 /* KeyFlip.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyFlip.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F2DFEA0CDABE1C1702B5F94B /* LayoutConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutConverterTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -44,6 +49,7 @@
 		217EE8F3C0F1BCED4FA05321 /* KeyFlipTests */ = {
 			isa = PBXGroup;
 			children = (
+				E185C55A5892A6B869F3AA79 /* ConversionRouteTests.swift */,
 				F2DFEA0CDABE1C1702B5F94B /* LayoutConverterTests.swift */,
 				3571080EDF2CC76C99AEBA24 /* SentenceExtractionTests.swift */,
 			);
@@ -66,6 +72,7 @@
 				417E9693DB18566BC5F439A4 /* AppState.swift */,
 				0B168DA535E89836B53BD95F /* Assets.xcassets */,
 				5036E6A8825DA8CAC2C64859 /* ConversionController.swift */,
+				C4151C5039427F575A8F5620 /* ConversionRoute.swift */,
 				CA24B4692861031CB6786398 /* HotkeyMonitor.swift */,
 				8AAC79FE5FD086701D04BDE7 /* Info.plist */,
 				58CADAC0A5203A3E6C3B3F80 /* InputSourceManager.swift */,
@@ -180,6 +187,7 @@
 			files = (
 				EA0DEEBB6DDA72FEF81C57E2 /* AppState.swift in Sources */,
 				CFBE8437B9AFAE214AEF96F2 /* ConversionController.swift in Sources */,
+				E25F1491F9C4E68C7E344285 /* ConversionRoute.swift in Sources */,
 				3185154DCDB2C3E73FA7B364 /* HotkeyMonitor.swift in Sources */,
 				D783E0FF7CB6DC5D420BAFE6 /* InputSourceManager.swift in Sources */,
 				DBBA625DD92F84F197859154 /* KeyFlipApp.swift in Sources */,
@@ -193,6 +201,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				985D0869FA8D3DFF424DE371 /* ConversionRoute.swift in Sources */,
+				0F661033A150BE19F10F1108 /* ConversionRouteTests.swift in Sources */,
 				EA01FCF93A560333D552C834 /* InputSourceManager.swift in Sources */,
 				F19D0F77897EAC2A66DC3690 /* LayoutConverter.swift in Sources */,
 				25883C3A405A4AE6FACB63A2 /* LayoutConverterTests.swift in Sources */,

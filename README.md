@@ -11,7 +11,7 @@ You know the moment: you type a whole sentence, look up, and it's gibberish beca
 1. Select the mistyped text.
 2. Press **🌐⌘ (Globe + Command)**.
 3. The text is retyped as if you had pressed the same keys in your next keyboard language.
-4. Press again to cycle to the next language.
+4. Press again to convert onward — or set a destination per language so it always lands where you want.
 
 KeyFlip lives quietly in your menu bar — a free, open-source keyboard layout converter for macOS. No windows, no fuss. It works between any input sources you have enabled: Hebrew ⇄ English, Russian ⇄ English, Arabic, Greek, Ukrainian, Persian and more.
 
@@ -20,10 +20,11 @@ KeyFlip lives quietly in your menu bar — a free, open-source keyboard layout c
 - **One hotkey**: Globe(fn) + Command, pressed together. Hold Globe and tap Command to cycle through languages quickly.
 - **No selection needed**: with nothing selected, KeyFlip converts what you just typed — from the cursor back to the last period (or line break). Toggle it off in Settings.
 - **Works with all your layouts**: cycles through whatever keyboard layouts you have enabled in macOS (input methods like Chinese/Japanese are skipped — they have no key-for-key mapping).
+- **A destination per language**: instead of cycling, point each language straight at another one — Hebrew (QWERTY) → English, English → Hebrew (QWERTY). Essential once you keep two layouts for the same language, where "next in the list" is a coin flip.
 - **Works in stubborn apps**: Electron apps (WhatsApp, Slack, Claude) and Catalyst apps (WhatsApp's Mac app) need special handling to read and replace text — KeyFlip does it automatically.
 - **Smart detection**: figures out which layout the text was typed in, so the first press almost always does the right thing.
 - **Switches your keyboard too** (optional): after converting, your input source flips to the target language so you can keep typing. Toggle it off in Settings.
-- **Menu bar app**: with launch-at-login and per-language include/exclude in a small Settings window.
+- **Menu bar app**: launch-at-login, per-language include/exclude and destinations in a small Settings window, which opens by itself the first time you run KeyFlip.
 
 ## Install
 
