@@ -25,13 +25,13 @@ KeyFlip lives quietly in your menu bar. No windows, no fuss.
 
 ### Download
 
-Grab `KeyFlip-x.y.z.dmg` from the [latest release](../../releases/latest), open it, and drag **KeyFlip** to **Applications**.
+Grab `KeyFlip-x.y.z.dmg` from the [latest release](../../releases/latest), open it, and drag **KeyFlip** into **Applications**. That's the whole install — the app is signed and notarized by Apple, so there's no Gatekeeper detour on first launch.
 
-The app is not notarized (no Apple Developer subscription), so the first launch needs one extra step: **right-click KeyFlip.app → Open → Open**. If macOS still refuses, approve it under System Settings → Privacy & Security → "Open Anyway", or clear the quarantine flag:
+Requires macOS 14 (Sonoma) or later. Universal binary (Apple silicon and Intel).
 
-```sh
-xattr -cr /Applications/KeyFlip.app
-```
+On first launch, KeyFlip asks for **Accessibility** access (System Settings → Privacy & Security → Accessibility). It needs this to read the selected text, replace it, and listen for the hotkey. That's the only permission it uses — KeyFlip never phones home and touches nothing but your current selection.
+
+You'll also need at least **two keyboard layouts** enabled in System Settings → Keyboard → Input Sources.
 
 ### Build from source
 
@@ -65,15 +65,21 @@ One-time setup, with an Apple Developer account:
      --apple-id <account email> --team-id <TEAMID> --password <app-specific password>
    ```
 
-Then each release is one command — it builds, signs, notarizes, staples, and verifies with Gatekeeper:
+Then each release is one command. It builds, signs, notarizes and staples **both the app and the disk image**, then verifies the result with Gatekeeper:
 
 ```sh
-SIGN_IDENTITY="Developer ID Application: <Name> (<TEAMID>)" NOTARY_PROFILE=keyflip scripts/package.sh
+scripts/package.sh
 ```
 
-On first launch, KeyFlip asks for **Accessibility** access (System Settings → Privacy & Security → Accessibility). It needs this to read the selected text, replace it, and listen for the hotkey. That's the only permission it uses — KeyFlip never phones home and touches nothing but your current selection.
+The signing identity is picked up from the keychain and the notary profile defaults to `keyflip`; override either with `SIGN_IDENTITY=...` / `NOTARY_PROFILE=...`, or pass `SIGN_IDENTITY=-` for an unsigned local build. Stapling the app alone is not enough — a `.dmg` that was signed but never notarized is still refused by Gatekeeper once it has been downloaded.
 
-You'll also need at least **two keyboard layouts** enabled in System Settings → Keyboard → Input Sources.
+Add `--release` to tag the commit and stage a **draft** GitHub release with the DMG, the zip and `SHA256SUMS` attached:
+
+```sh
+scripts/package.sh --release
+```
+
+Review the draft, then publish it with `gh release edit v<version> --draft=false`. Release notes live in `scripts/release-notes.md`; the DMG window art is `scripts/dmg/background.tiff`, regenerated with `swift scripts/make-dmg-background.swift <out.png> <scale>`.
 
 ## How it works
 
